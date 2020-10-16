@@ -1,4 +1,10 @@
 pipeline {
+    environment {
+        registry = "xandertg/calculator"
+        registryCredential = 'dockerhub'
+        dockerImage=''
+    }
+
     agent any
     
     stages {
@@ -20,5 +26,22 @@ pipeline {
                 sh 'echo Deploy'
             }
         }
+        
+        stage ('Package') {
+            steps {
+                sh 'mvn package'
+                archiveArtifacts artifacts: 'src/**/*.java'
+                archiveArtifacts artifacts: 'target/*.jar'
+            }
+        }
+
+        stage ('Building image') {
+            steps {
+                script {
+                    dockerImage = docker.build registry + ":$BUILD_NUMBER"
+                }
+            }
+        }
+
     }
 } 
